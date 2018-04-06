@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.ko.morph.AnalysisOutput;
 import org.apache.lucene.analysis.ko.morph.MorphAnalyzer;
+import org.apache.lucene.analysis.ko.morph.MorphException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,19 +62,23 @@ public class MorphAnalyzerMultiThreadTest {
 
 	protected String exec() {
 		try {
-			MorphAnalyzer analyzer = new MorphAnalyzer();
-			StringBuilder buf = new StringBuilder();
 			log.info(Thread.currentThread().getName() + "analyze 시작");
-			for (int ii = 0; ii < crumb.length; ii++) {
-				List<AnalysisOutput> output = analyzer.analyze(crumb[ii]);
-				buf.append(output.toString());
-			}
-			String result = buf.toString();
+			String result = analyze(crumb);
 			log.info(Thread.currentThread().getName() + "analyze 종료");
 			return result;
-
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected static String analyze(String[] crumb) throws MorphException {
+		MorphAnalyzer analyzer = new MorphAnalyzer();
+		StringBuilder buf = new StringBuilder();
+		
+		for (int ii = 0; ii < crumb.length; ii++) {
+			List<AnalysisOutput> output = analyzer.analyze(crumb[ii]);
+			buf.append(output.toString());
+		}
+		return buf.toString();
 	}
 }

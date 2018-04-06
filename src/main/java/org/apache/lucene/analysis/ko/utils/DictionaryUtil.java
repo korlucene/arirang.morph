@@ -68,6 +68,19 @@ public class DictionaryUtil {
   }
   
   /**
+   * 단어 사전을 로드하지 않는다.
+   * 
+   * @throws MorphException
+   */
+  public static void initDictionary() throws MorphException {
+	if (!initialized.get()) initialize();  
+	synchronized(prepared) {
+		DictionaryUtil.dictionary = new Trie<String, WordEntry>(true);
+	    prepared.set(true);
+	}
+  }
+  
+  /**
    * 사전이 준비되었는지 확인
    */
   private static void checkDictionary() throws MorphException {
@@ -247,6 +260,58 @@ public class DictionaryUtil {
       } catch (MorphException e) {
           throw new RuntimeException(e);
       }
+  }
+  
+  /**
+   * Thread Safe 하지 않음
+   * @Experimental 
+   */
+  public static void clearWords() {
+	  if (dictionary != null) {
+		  dictionary.clear();
+	  }
+  }
+  
+  /**
+   * Thread Safe 하지 않음
+   * @Experimental 
+   */
+  public static void addWord(WordEntry entry) {
+	  synchronized(prepared) {
+		  if (dictionary == null) {
+			 dictionary = new Trie<String, WordEntry>(true);
+		  }
+		  dictionary.add(entry.getWord(), entry);
+		  prepared.set(true);
+	  }
+  }
+  
+  /**
+   * Thread Safe 하지 않음 
+   * @Experimental
+   */
+  public static void addWords(List<String> lines) {
+	  synchronized(prepared) {
+		  if (dictionary == null) {
+			 dictionary = new Trie<String, WordEntry>(true);
+		  }
+		  loadWords(dictionary, lines);
+		  prepared.set(true);
+	  }
+  }
+  
+  /**
+   * Thread Safe 하지 않음 
+   * @Experimental
+   */
+  public static void addCompounds(List<String> lines) {
+	  synchronized(prepared) {
+		  if (dictionary == null) {
+			 dictionary = new Trie<String, WordEntry>(true);
+		  }
+		  loadCompounds(dictionary, lines);
+		  prepared.set(true);
+	  }
   }
 
   public static WordEntry getWordExceptVerb(String key) throws MorphException {    
