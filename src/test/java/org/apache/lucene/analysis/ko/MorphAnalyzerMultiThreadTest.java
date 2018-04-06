@@ -24,7 +24,7 @@ public class MorphAnalyzerMultiThreadTest {
 
 	@Test
 	public void test() throws Exception {
-		testMultiThread(4);
+		testMultiThread(8);
 	}
 
 	protected void testMultiThread(int nThreads) throws InterruptedException, ExecutionException {
@@ -42,9 +42,14 @@ public class MorphAnalyzerMultiThreadTest {
 			});
 		}
 
-		List<T> tasks = new ArrayList<T>();
+		List<Callable<String>> tasks = new ArrayList<Callable<String>>();
 		for (int n = 0; n < nThreads; n++) {
-			tasks.add(new T());
+			tasks.add(new Callable<String>() {
+				public String call() {
+					// DictionaryUtil.loadDictionary(false);
+					return exec();
+				}
+			});
 		}
 		List<Future<String>> results = pool.invokeAll(tasks);
 		for (Future<String> result : results) {
@@ -70,13 +75,5 @@ public class MorphAnalyzerMultiThreadTest {
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	private class T implements Callable<String> {
-
-		public String call() {
-			return exec();
-		}
-
 	}
 }

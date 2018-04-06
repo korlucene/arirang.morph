@@ -23,6 +23,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * file utility class
@@ -39,7 +40,7 @@ public class FileUtil {
    * @throws MorphException Thrown if the classloader can not be found or if
    *  the file can not be found in the classpath.
    */
-  public static File getClassLoaderFile(String filename) throws MorphException  {
+  public static File getClassLoaderFile(String filename) {
     // note that this method is used when initializing logging, so it must
     // not attempt to log anything.
     File file = null;
@@ -48,9 +49,11 @@ public class FileUtil {
     if (url == null) {
       url = ClassLoader.getSystemResource(filename);
       if (url == null) {
-        throw new MorphException("Unable to find " + filename);
+        // throw new MorphException("Unable to find " + filename);
+    	Logger.getLogger("org.apache.lucene.analysis.ko.dic").warning("Unable to find " + filename);
+      } else {
+        file = toFile(url);
       }
-      file = toFile(url);
     } else {
       file = toFile(url);
     }
@@ -93,14 +96,16 @@ public class FileUtil {
    * @throws java.io.UnsupportedEncodingException if the encoding is not supported by the VM
    * @since Commons IO 1.1
    */
-  public static List<String> readLines(String fName, String encoding) throws MorphException, IOException  {
+  public static List<String> readLines(String fName, String encoding) throws IOException  {
     InputStream in = null;        
     try {
 
       File file = getClassLoaderFile(fName);
       if(file!=null&&file.exists()) {
+    	  Logger.getLogger("org.apache.lucene.analysis.ko.dic").info("사전[" + fName + "]을 파일[" + file.getAbsolutePath() + "]에서 로드");
         in = openInputStream(file);
       } else {
+    	  Logger.getLogger("org.apache.lucene.analysis.ko.dic").info("사전[" + fName + "]을 기본 jar에서 로드");
         in = new ByteArrayInputStream(readByteFromCurrentJar(fName));
       }
         
@@ -265,15 +270,15 @@ public class FileUtil {
     }
   }
 
-  public static byte[] readByteFromCurrentJar(String resource) throws MorphException {
+  public static byte[] readByteFromCurrentJar(String resource) {
 
     String  jarPath = FileUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
     JarResources jar = new JarResources(jarPath);
-    try {  
+//    try {  
       return jar.getResource(resource);
-    } catch (Exception e) {
-      throw new MorphException(e.getMessage(),e);
-    }
+//    } catch (Exception e) {
+//      throw new MorphException(e.getMessage(),e);
+//    }
   }
 }
